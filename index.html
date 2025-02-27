@@ -96,27 +96,31 @@
         let textSize = parseInt(textSizeSlider.value);
 
         function drawCanvas() {
-            const bg = new Image();
-            bg.src = 'IMG_7521.png';
-            bg.onload = function() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
+    const bg = new Image();
+    bg.src = 'IMG_7521.png';
+    bg.onload = function() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
 
-                // Draw user-inserted text (UIT) on the left
-                ctx.font = `${textSize}px AdobeDia`;
-                ctx.fillStyle = "#000080";
-                ctx.fillText(textInput.value, 50, 180);
+        // Draw user-inserted text (UIT) centered on the left
+        ctx.font = `${textSize}px AdobeDia`;
+        ctx.fillStyle = "#000080";
+        const text = textInput.value;
+        const textWidth = ctx.measureText(text).width;
+        const textX = (canvas.width / 4) - (textWidth / 2);
+        const textY = 180;
+        ctx.fillText(text, textX, textY);
 
-                // Draw user-uploaded image (UUI) on the right
-                if (userImage) {
-                    const imgWidth = 150;
-                    const imgHeight = 150;
-                    const imgX = canvas.width - imgWidth - 50;
-                    const imgY = 80;
-                    ctx.drawImage(userImage, imgX, imgY, imgWidth, imgHeight);
-                }
-            }
+        // Draw user-uploaded image (UUI) on the right
+        if (userImage) {
+            const imgWidth = 150;
+            const imgHeight = 150;
+            const imgX = (canvas.width * 3 / 4) - (imgWidth / 2);
+            const imgY = 80;
+            ctx.drawImage(userImage, imgX, imgY, imgWidth, imgHeight);
         }
+    }
+}
 
         textInput.addEventListener('input', drawCanvas);
 
