@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>RetroCord Maker</title>
+    <style>
+        @font-face {
+            font-family: 'Adobe Dia';
+            src: url('Adobe Dia.ttf') format('truetype');
+        }
+        
+        body {
+            background: url('background.png') center center fixed;
+            background-size: cover;
+            font-family: 'Adobe Dia', monospace;
+            text-align: center;
+            color: #000080;
+        }
+        
+        h1 {
+            font-size: 48px;
+            margin-top: 20px;
+        }
+        
+        .container {
+            display: inline-block;
+            padding: 20px;
+            background-color: #e0e0e0;
+            border: 4px solid #000;
+            box-shadow: 8px 8px #888;
+        }
+        
+        input[type="text"] {
+            width: 200px;
+            font-size: 18px;
+            margin: 10px;
+        }
+        
+        input[type="file"] {
+            margin: 10px;
+        }
+        
+        .canvas-container {
+            display: inline-block;
+            margin-top: 20px;
+            border: 4px solid #000;
+            box-shadow: 8px 8px #888;
+            background-color: #ffffe0;
+            background-size: 4px 4px;
+            background-image: radial-gradient(#ccc 1px, transparent 1px);
+        }
+        
+        canvas {
+            display: block;
+        }
+        
+        .button {
+            background-color: #008080;
+            color: #fff;
+            border: 2px outset #004040;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        
+        .button:hover {
+            background-color: #004040;
+        }
+    </style>
+</head>
+<body>
+    <h1>RetroCord Maker</h1>
+    <div class="container">
+        <div>
+            <label>Upload Image (PNG)</label>
+            <br>
+            <input type="file" id="imageInput" accept="image/png" onchange="updateCanvas()">
+        </div>
+        <div>
+            <label>Enter Text</label>
+            <br>
+            <input type="text" id="textInput" placeholder="Insert" oninput="updateCanvas()">
+        </div>
+        <div class="canvas-container">
+            <canvas id="canvas" width="500" height="200"></canvas>
+        </div>
+        <br>
+        <button class="button" onclick="downloadImage()">Download</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let uploadedImage = null;
+
+        function updateCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = "#ffffe0";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = "#000080";
+            ctx.font = "48px 'Adobe Dia'";
+            ctx.textBaseline = "top";
+            ctx.fillText(document.getElementById('textInput').value, 20, 20);
+
+            if (uploadedImage) {
+                const imgSize = 100;
+                ctx.drawImage(uploadedImage, canvas.width - imgSize - 20, 20, imgSize, imgSize);
+            }
+        }
+
+        document.getElementById('imageInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedImage = new Image();
+                    uploadedImage.onload = function() {
+                        updateCanvas();
+                    }
+                    uploadedImage.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function downloadImage() {
+            const link = document.createElement('a');
+            link.href = canvas.toDataURL('image/png');
+            link.download = 'retrocord.png';
+            link.click();
+        }
+    </script>
+</body>
+</html>
