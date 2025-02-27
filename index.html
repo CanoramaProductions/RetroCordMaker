@@ -5,28 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RetroCord Maker</title>
     <style>
+        @font-face {
+            font-family: 'AdobeDia';
+            src: url('Adobe Dia.ttf') format('truetype');
+        }
+
         body {
-            font-family: 'Courier New', monospace;
+            font-family: 'AdobeDia', sans-serif;
             background-color: #d3d3f0;
             text-align: center;
         }
+
         h1 {
             font-size: 3em;
         }
+
         .container {
             padding: 20px;
         }
+
         input[type="text"], input[type="file"] {
             margin: 10px;
+            font-family: 'AdobeDia', sans-serif;
         }
+
         #canvasContainer {
             display: inline-block;
             border: 4px solid #888;
-            background-color: #fdfdd0;
         }
+
         canvas {
             display: block;
+            background: url('IMG_7521.png') no-repeat center;
+            background-size: cover;
         }
+
         .download-btn {
             background-color: #00cccc;
             border: 2px solid #007777;
@@ -35,8 +48,10 @@
             text-decoration: none;
             font-weight: bold;
             display: inline-block;
-            margin-top: 10px;
+            margin-top: 20px;
+            cursor: pointer;
         }
+
         .download-btn:hover {
             background-color: #007777;
         }
@@ -46,79 +61,70 @@
     <h1>RetroCord Maker</h1>
     <div class="container">
         <label>Upload Image (PNG)</label>
-        <input type="file" id="imageUpload" accept="image/png"><br>
+        <br>
+        <input type="file" id="imageInput" accept="image/png">
+        <br>
         <label>Enter Text</label>
-        <input type="text" id="inputText" placeholder="Insert"><br>
-        <button class="button" onclick="generateImage()">Generate</button>
+        <br>
+        <input type="text" id="textInput" placeholder="Insert">
+        <br>
+        <div id="canvasContainer">
+            <canvas id="canvas" width="800" height="300"></canvas>
+        </div>
+        <br>
+        <a id="downloadLink" class="download-btn">Download</a>
     </div>
-    <div id="canvasContainer">
-        <canvas id="canvas" width="600" height="250"></canvas>
-    </div>
-    <br>
-    <a id="downloadLink" class="download-btn" download="retrocord.png" style="display:none;">Download</a>
 
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-        let uploadedImage = null;
+        const imageInput = document.getElementById('imageInput');
+        const textInput = document.getElementById('textInput');
+        const downloadLink = document.getElementById('downloadLink');
+        let userImage = null;
 
-        document.getElementById('imageUpload').addEventListener('change', function (e) {
-            const reader = new FileReader();
-            reader.onload = function (event) {
-                const img = new Image();
-                img.onload = function () {
-                    uploadedImage = img;
-                    drawCanvas();
+        function drawCanvas() {
+            const bg = new Image();
+            bg.src = 'IMG_7521.png';
+            bg.onload = function() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
+
+                // Draw user-inserted text (UIT) on the left
+                ctx.font = "60px AdobeDia";
+                ctx.fillStyle = "#000080";
+                ctx.fillText(textInput.value, 50, 180);
+
+                // Draw user-uploaded image (UUI) on the right
+                if (userImage) {
+                    const imgWidth = 150;
+                    const imgHeight = 150;
+                    const imgX = canvas.width - imgWidth - 50;
+                    const imgY = 80;
+                    ctx.drawImage(userImage, imgX, imgY, imgWidth, imgHeight);
                 }
-                img.src = event.target.result;
+            }
+        }
+
+        textInput.addEventListener('input', drawCanvas);
+
+        imageInput.addEventListener('change', function(e) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                userImage = new Image();
+                userImage.src = event.target.result;
+                userImage.onload = drawCanvas;
             }
             reader.readAsDataURL(e.target.files[0]);
         });
 
-        function drawCanvas() {
-            // Clear the canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        downloadLink.addEventListener('click', function() {
+            const image = canvas.toDataURL('image/png');
+            downloadLink.href = image;
+            downloadLink.download = 'RetroCord.png';
+        });
 
-            // Background
-            ctx.fillStyle = '#fdfdd0';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Halftone effect
-            for (let y = 0; y < canvas.height; y += 4) {
-                for (let x = 0; x < canvas.width; x += 4) {
-                    ctx.fillStyle = (x + y) % 8 === 0 ? '#cccc99' : '#fdfdd0';
-                    ctx.fillRect(x, y, 4, 4);
-                }
-            }
-
-            // Inner border
-            ctx.strokeStyle = '#000000';
-            ctx.lineWidth = 4;
-            ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
-
-            // Text
-            ctx.font = "48px 'Courier New'";
-            ctx.fillStyle = '#0000aa';
-            ctx.fillText(document.getElementById('inputText').value, 50, 150);
-
-            // User-uploaded Image (right side)
-            if (uploadedImage) {
-                const scaleFactor = Math.min(150 / uploadedImage.width, 150 / uploadedImage.height);
-                const imgWidth = uploadedImage.width * scaleFactor;
-                const imgHeight = uploadedImage.height * scaleFactor;
-                ctx.drawImage(uploadedImage, canvas.width - imgWidth - 50, canvas.height - imgHeight - 50, imgWidth, imgHeight);
-            }
-
-            // Download link visibility
-            document.getElementById('downloadLink').style.display = 'inline-block';
-        }
-
-        function generateImage() {
-            drawCanvas();
-            const dataURL = canvas.toDataURL('image/png');
-            const downloadLink = document.getElementById('downloadLink');
-            downloadLink.href = dataURL;
-        }
+        window.onload = drawCanvas;
     </script>
 </body>
 </html>
